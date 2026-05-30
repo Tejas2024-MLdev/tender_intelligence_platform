@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+
 from backend.models.document import Document
 
 
@@ -49,4 +50,21 @@ class DocumentService:
             )
         )
 
-        return result.scalars().all()       
+        return result.scalars().all()  
+
+
+    @staticmethod
+    async def get_document(
+        db: AsyncSession,
+        document_id: str,
+        organization_id: str,
+    ):
+
+        result = await db.execute(
+            select(Document).where(
+                Document.id == document_id,
+                Document.organization_id == organization_id,
+            )
+        )
+
+        return result.scalar_one_or_none()     

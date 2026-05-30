@@ -4,7 +4,12 @@ from uuid import uuid4
 from minio import Minio
 
 from backend.core.config import settings
+from tempfile import NamedTemporaryFile
 
+
+from qdrant_client.models import (
+    PointStruct,
+)
 
 class MinioService:
 
@@ -47,3 +52,61 @@ class MinioService:
         )
 
         return object_name
+    
+
+
+    @classmethod
+    def download_document(
+        cls,
+        object_name: str,
+    ):
+
+        response = cls.client.get_object(
+            settings.MINIO_BUCKET,
+            object_name,
+        )
+
+        temp_file = NamedTemporaryFile(
+            delete=False,
+            suffix=".pdf",
+        )
+
+        temp_file.write(
+            response.read()
+        )
+
+        temp_file.close()
+
+        return temp_file.name
+    
+
+
+    @classmethod
+    def insert_chunks(
+        cls,
+        document_id: str,
+        chunks: list[str],
+        vectors: list[list[float]],
+    ):
+
+        points = []
+
+        for idx, (chunk, vector) in enumerate(
+            zip(chunks, vectors)
+        ):
+
+            points.append(
+                PointStruct(
+                    id=idx,
+                    vector=vector,
+                    payload={
+                        "document_id": document_id,
+                        "chunk_text": chunk,
+                    },
+                )
+            )
+
+        client.upsert(
+            collection_name=cls.COLLECTION,
+            points=points,
+        )

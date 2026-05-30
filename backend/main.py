@@ -8,11 +8,19 @@ from backend.services.storage.minio_service import (
     MinioService,
 )
 
+from backend.services.rag.qdrant_service import (
+    QdrantService,
+)
+
 
 from backend.api.documents.routes import (
     router as documents_router
 )
 
+
+from backend.api.search.routes import (
+    router as search_router
+)
 
 
 app = FastAPI(
@@ -24,6 +32,11 @@ app.include_router(auth_router)
 
 app.include_router(documents_router)
 
+QdrantService.create_collection()
+
+app.include_router(
+    search_router
+)
 
 @app.get("/")
 async def root():

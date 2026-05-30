@@ -5,6 +5,10 @@ from fastapi import UploadFile
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.services.rag.ingestion_service import (
+    IngestionService,
+)
+
 from backend.core.dependencies import get_current_user
 from backend.db.session import get_db
 from backend.services.document_service import (
@@ -93,3 +97,40 @@ async def list_documents(
             ]
         )
     )    
+
+
+@router.post("/{document_id}/ingest")
+async def ingest_document(
+    document_id: str,
+    current_user: dict = Depends(
+        get_current_user
+    ),
+    db: AsyncSession = Depends(get_db),
+):
+
+    document = (
+        await DocumentService.get_document(
+            db=db,
+            document_id=document_id,
+            organization_id=current_user[
+                "organization_id"
+            ],
+        )
+    )
+
+    if not document:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found",
+        )
+
+    chunk_count = (
+        IngestionService.ingest_document(
+            document
+        )
+    )
+
+    return {
+        "document_id": str(document.id),
+        "chunks_created": chunk_count,
+    }

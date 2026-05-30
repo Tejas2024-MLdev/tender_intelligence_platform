@@ -23,6 +23,10 @@ from backend.api.search.routes import (
 )
 
 
+from backend.api.chat.routes import (
+    router as chat_router
+)
+
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION
@@ -31,6 +35,10 @@ app = FastAPI(
 app.include_router(auth_router)
 
 app.include_router(documents_router)
+
+app.include_router(
+    chat_router
+)
 
 QdrantService.create_collection()
 

@@ -29,6 +29,13 @@ class Settings(BaseSettings):
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
+
+    LLM_PROVIDER: str = "openrouter"
+
+    OPENROUTER_API_KEY: str | None = None
+
+    OPENROUTER_MODEL: str = "deepseek/deepseek-chat-v3"
+
     @property
     def database_url(self) -> str:
         return (
